@@ -1,0 +1,62 @@
+---
+title: F test theory
+---
+
+
+Simulate a simple 3 locus haplotype system with two loci in LD of 0.5, and each with MAF = 0.1
+
+$$
+y_1 ~ y_2 + y_3 + e_1
+y_1 ~ y_2 + y_3 + y_{2}y_{3} e_1
+$$
+
+```{r}
+library(simulateGP)
+
+gendat <- function(n)
+{
+	y1 <- rep(0, n)
+	y2 <- rep(0, n)
+	y1[856:900] <- 1
+	y2[901:945] <- 1
+	y1[946:1000] <- 1
+	y2[946:1000] <- 1
+	y3 <- rbinom(n, 1, 0.5)
+	return(tibble(y1,y2,y3))
+}
+
+run_sim <- function(i, n=1000)
+{
+	set.seed(i)
+	dat <- gendat(n)
+	mod1 <- lm(y1 ~ y2 + y3, dat)
+	mod2 <- lm(y1 ~ y2 + y3 + y2*y3, dat)
+	amod <- anova(mod1, mod2)
+	return(amod)
+}
+
+l <- lapply(1:1000, function(x) run_sim(x))
+set.seed(sapply(l, function(x) x$F[2]) %>% which.max)
+dat <- gendat(1000)
+mod1 <- lm(y1 ~ y2 + y3, dat)
+mod2 <- lm(y1 ~ y2 + y3 + y2*y3, dat)
+amod <- anova(mod1, mod2)
+
+SSE1 <- sum(residuals(mod1)^2)
+SSE2 <- sum(residuals(mod2)^2)
+
+(SSE1 - SSE2) / (SSE2 / 996)
+
+pchisq((SSE1 - SSE2) / (SSE2 / 996), 1, low=F)
+pf((SSE1 - SSE2) / (SSE2 / 996), 1, 996, low=F)
+
+amod$F[2]
+
+var(y1)
+var(residuals(mod1))/var(y1)
+var(residuals(mod2))/var(y1)
+
+
+```
+
+
