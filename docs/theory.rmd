@@ -56,7 +56,12 @@ var(y1)
 var(residuals(mod1))/var(y1)
 var(residuals(mod2))/var(y1)
 
-
+ve2 <- var(residuals(mod2))
+Q <- amod$F[2] * ve2
+Q
+sum(residuals(mod2)^2) / 996
 ```
+
+
 
 

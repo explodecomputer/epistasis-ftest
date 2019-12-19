@@ -1,6 +1,10 @@
 ---
 title: Testing for genetic interactions with imperfect information about additive causal effects
-output: pdf_document
+output: 
+    pdf_document:
+        default
+    word_document:
+        default
 ---
 
 ## Abstract
@@ -79,7 +83,7 @@ Assume that the phenotype is explained entirely by $y_1$, which represents the f
 
 $$
 \begin{aligned}
-y_1 &\sim y_2 + y_3 + e_a
+y_1 &\sim y_2 + y_3 + e_a \\
 y_1 &\sim y_2 + y_3 + y_{2}y_{3} + e_b
 \end{aligned}
 $$
@@ -125,18 +129,45 @@ To test this, we performed a new set of simulations in which we simulated a phen
 
 
 
+## Methods
+
+### Replication simulations
+
+Our objective is to evaluate the expected behaviour of replication of interaction tests under the null hypothesis that there is no interaction (and therefore any discovered interactions are false positives). To do this we create two datasets, one representing the discovery sample (n = 846) and another representing the replication (n = 2131). We use genotype data from the Avon Longitudinal Study of Parents and Children (ALSPAC) study to create the two genetic datasets, such that realistic LD structures are present and there is genotype resampling between the discovery and replication. The ALSPAC data was imputed to 1000 genomes reference panel (Phase 3 version 1), and used to simulate the phenotype under an additive model, where a large additive effect was caused by a single variant. 
+
+#### Phenotype simulation
+
+Here we want to simulate a phenotype that is due to a single large additive effect, and then perform interaction tests with that causal variant absent from the set of markers that are tested. In H2014 we reported *MBNL1* gene expression being influenced by several cis-trans epistatic interactions. In that scenario, rs67903230 was the fine-mapped additive cis-variant, which we will treat as the causal variant in these simulations. It was absent from the genotype data used to conduct the interaction analysis, and instead rs13069559 emerged as a cis-tagging variant, which showed interaction associations against variants on other chromosomes, and also replicated in independent datasets. We attempt to mimic this scenario here.
+
+$$
+y_i = b_{c}x_{ic} + e_i
+$$
+
+where $x_{ic} \in {0,1,2}$ is the genotype value for individual $i$ at the causal variant. In this case we use the rs67903230 in the ALSPAC data. The residual error term $e_i \sim N(0, 1-b^2_c var(x_c))$ where additive effect $b_c = \sqrt{\frac{r_c^2 var(y)}{var(x)}}$ such that across the simulations $r^2_c \sim U(0,0.5)$. 
+
+
+#### Analyses
+
+Once the phenotype was simulated using the causal variant, we were able to obtain F-statistics for the interaction term of the tagging variant (rs13069559) against every trans-variant (excluding those on the cis-chromosome). We retained only 528,509 autosomal markers to match the original discovery data. The 4 df interaction test was performed between rs13069559 and each of these markers sequentially. We did this both in the discovery and the replication dataset, so that we could compare the distributions of F-statistics between the two, where we expect variation to only arise due to resampling of genotype values.
+
+This process of creating a phenotype, performing the cis-trans analysis in the discovery and the cis-trans analysis in the replication, was repeated 40,000 times. 
+
+To mimic the discovery-replication process, for a particular simulation we tested if any cis-trans interactions (4 df test) were significant at a Bonferroni corrected threshold, and then looked up their associations in the replication. 
+
+
+
 ## Figures
 
-![Genomic inflation factors for each of the 501 SNP pairs that passed the significance filters in H2014. Values on the x-axis were calculated as the ratio of the median F-statistic for the interaction test and its value under the null hypothesis.](figures/fig1.pdf)
+![Figure 1: Genomic inflation factors for each of the 501 SNP pairs that passed the significance filters in H2014. Values on the x-axis were calculated as the ratio of the median F-statistic for the interaction test and its value under the null hypothesis.](figures/fig1.pdf)
 
-![Relationship between variance explained by the cis additive locus (x-axis) and genomic inflation factor for the interaction test statistic (y-axis)](figures/fig2a.png)
+![Figure 2: Relationship between variance explained by the cis additive locus (x-axis) and genomic inflation factor for the interaction test statistic (y-axis)](figures/fig2a.png)
 
-![Number of independent and significant interaction terms under additive model (y-axis) with respect to the genomic inflation factor in the simulation (x-axis)](figures/fig2b.png)
+![Figure 3: Number of independent and significant interaction terms under additive model (y-axis) with respect to the genomic inflation factor in the simulation (x-axis)](figures/fig2b.png)
 
-![Relationship between genomic inflation factor in the discovery (x-axis) and replication datasets (y-axis) for 40,000 genome-wide simulations](figures/fig3a.png)
+![Figure 4: Relationship between genomic inflation factor in the discovery (x-axis) and replication datasets (y-axis) for 40,000 genome-wide simulations](figures/fig3a.png)
 
-![Distribution of the correlation of the interaction F-statistics between two independent datasets, across 40,000 simulations](figures/fig3b.png)
+![Figure 5: Distribution of the correlation of the interaction F-statistics between two independent datasets, across 40,000 simulations](figures/fig3b.png)
 
-![Rate of replication of false positives in an independent dataset (y-axis) as a function of the genomic inflation estimated in the discovery dataset (x-axis). Colours represent the replication significance threshold used, where 'experiment' is the one used in H2014 (p < 0.05/501), and Bonferroni and FDR pertain the multiple testing correction within simulation.](figures/fig3c.png)
+![Figure 6: Rate of replication of false positives in an independent dataset (y-axis) as a function of the genomic inflation estimated in the discovery dataset (x-axis). Colours represent the replication significance threshold used, where 'experiment' is the one used in H2014 (p < 0.05/501), and Bonferroni and FDR pertain the multiple testing correction within simulation.](figures/fig3c.png)
 
-![Genomic inflation factors (y-axis) estimated for interaction test statistics across a range of values for the variance explained by the additive effect (x-axis). Each line represents a different data scenario.](figures/fig4.pdf)
+![Figure 7: Genomic inflation factors (y-axis) estimated for interaction test statistics across a range of values for the variance explained by the additive effect (x-axis). Each line represents a different data scenario.](figures/fig4.pdf)
