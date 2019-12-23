@@ -9,20 +9,20 @@ output:
 
 ## Abstract
 
-
+The extent to which genetic interaction (epistasis) contributes to the genetic architecture of human complex traits is expected to be low but remains unknown. The primary approach to evaluating this question is to perform large scale searches of pairwise interactions, using an F-test that evaluates if the interaction terms explain more than the marginal terms alone. Using results of 501 genetic interactions previously reported to influence gene expression, along side theory and simulations, this paper seeks to explain why the standard approach is unreliable. We show that it can lead to high false discovery rates, that those false discoveries can have high replication rates, and that without sequence level data the problems are difficult to guard against.
 
 
 ## Introduction
 
-An important component of understanding the genetic architecture of complex traits is the extent to which the effect of a particular locus depends on the genotype at another locus, also known as genetic interaction or epistasis. Knowledge of epistatic influences on complex traits may inform biological understanding of their aetiology, contribute towards improved prediction accuracy, and have implications on natural selection. Along with other non-additive genetic components, the contribution of epistatic variance to complex traits is likely to be small, though broad sense heritability estimates which would capture them are seldom reported or decomposed into constituent parts for non-clonal organisms. Instead, researchers have sought to detect interacting genetic loci through association analyses to report instances of epistatic influences on complex traits. 
+An important component of understanding the genetic architecture of complex traits is the extent to which the effect of a particular locus depends on the genotype at another locus, also known as genetic interaction or epistasis. Knowledge of epistatic influences on complex traits may inform biological understanding of their aetiology, contribute towards improved prediction accuracy, and have implications on natural selection. Along with other non-additive genetic components, the contribution of epistatic variance to complex traits is likely to be small, but beyond analyses of clonal organisms, heritability is seldom estimated in the broad sense where the non-additive components could be captured and decomposed. Instead, researchers have sought to detect interacting genetic loci through association analyses to report instances of epistatic influences on complex traits. 
 
-In a recent review of the literature, it was concluded that of all the many empirical papers that search for epistasis influencing human complex traits it was unlikely that any reported statistical genetic interactions represented robust examples of biological epistasis. The Hemani et al 2014 (H2014) paper, which reported replication of genetic interactions in independent datasets, was listed amongst those examples. In this paper we aim to provide a detailed examination of the statistical test used as it is employed widely, but has potential issues which have not yet been described.
+In a recent review of the literature, it was concluded that of all the many empirical papers that search for epistasis influencing human complex traits it was unlikely that any reported statistical genetic interactions represented robust examples of biological epistasis. The Hemani et al 2014 (H2014) paper, which reported discovery of genetic interactions influencing gene expression levels, and replication in independent datasets, was listed amongst those examples. In this paper we aim to provide a detailed examination of the statistical test used as it is employed widely, but has potential issues which have not yet been described.
 
 ## The basic statistical test for 2-locus genetic interactions
 
-Should epistatic interactions influence complex traits, their detection is known to be difficult for two reasons. First, the statistical power for an interaction term to reach significance, in comparison to a marginal additive effect of similar magnitude, is low. This is because the statistical test typically has a larger number of degrees of freedom, and if the causal variants are not available in the data then loss of signal with decaying LD between the causal variant and the observed variant is squared or quadratic, in comparison to a linear loss for additive effects. Second, the parameter space for two-locus epistasis is O(m^2), hence a much more strict multiple testing correction is required than GWAS under the additive model, if the computational capability exists to test the entire set of pairwise interactions. If not, then the incomplete coverage likely translates into loss of power.
+Should epistatic interactions influence complex traits, their detection is known to be difficult for two reasons. First, the statistical power for an interaction term to reach significance is low in comparison to a marginal additive effect of similar magnitude. This is because the statistical test typically has a larger number of degrees of freedom, and if the causal variants are not available in the data then loss of signal with decaying LD between the causal variant and the observed variant is squared or quadratic, in comparison to a linear loss for additive effects. Second, the parameter space for two-locus epistasis is O(m^2), hence a much more strict multiple testing correction is required than GWAS under the additive model, if the computational capability exists to test the entire set of pairwise interactions. If not, then the incomplete coverage likely translates into loss of power.
 
-While many methods exist that attempt to circumvent these problems, one analytical strategy has been to bypass statistical power issues by selecting traits to analyse that are likely to have some large effects due to being potentially more immediately perturbed by genetic variation than downstream complex traits. For example, recent studies have focused efforts on analysing gene expression levels for epistatic interactions. In H2014 a brute force search strategy was performed, applying a 4 d.f. linear model for each pairwise combination of 528,509 genotyped autosomal single nucleotide polymorphisms (SNPs) against each of 7,339 gene expression levels. The statistical test attemped to capture any joint effect of two independent variants that was not explained by the marginal additive or dominance effects of either of the variants. 
+While many methods exist that attempt to circumvent these problems, one analytical strategy has been to bypass statistical power issues by selecting traits to analyse that are likely to have some large effects. In such traits, genetic perturbation could have a more proximal effect in comparison to complex diseases. Recent studies have focused efforts on analysing gene expression levels for epistatic interactions partly for this reason. In H2014 a brute force search strategy was performed, applying a 4 d.f. linear model for each pairwise combination of 528,509 genotyped autosomal single nucleotide polymorphisms (SNPs) against each of 7,339 gene expression levels. The statistical test attemped to capture any joint effect of two independent variants that was not explained by the marginal additive or dominance effects of either of the variants. 
 
 $$
 H_{0}: \sum^{3}_{i=1} \sum^{3}_{j=1} (\bar{x_{ij}} - \bar{x_{i}} - \bar{x_{j}} + \mu)^2 = 0
@@ -38,15 +38,15 @@ The method was used in H2014 with a sample of 846 individuals, and yielded 501 i
 
 ## A summary of the problems with the original findings
 
-Soon after publication, these findings were further replicated in an independent dataset by Wood et al (2014). However, with the availability of sequence level genetic data, they were able to fine-map the additive effects for each gene expression level where the H2014 genetic interactions were discovered. Typically the fine-mapped additive effects were distinct from the cis-acting interacting variant. Upon including the fine-mapped additive effects as covariates in the interaction models they found that most of the interaction effects substantially attenuated. We found a similar attenuation of effects in the original data by using fine-mapped imputed additive effects as covariates. In light of these findings, the likelihood that the statistical findings in H2014 represented biological epistasis was severely diminished. Importantly, it raised the question of why such a fundamental method was giving rise to unreliable results.
+Soon after publication, these findings were further replicated in an independent dataset by Wood et al (2014). However, with the availability of sequence level genetic data, they were able to fine-map the additive effects for each gene expression level where the H2014 genetic interactions were discovered. Typically the fine-mapped additive effects were distinct from the cis-acting interacting variant. Upon including the fine-mapped additive effects as covariates in the interaction models they found that most of the interaction effects substantially attenuated. Following this finding, we found a similar attenuation of effects in the original data by using fine-mapped imputed additive effects as covariates. In light of this exchange, it was clear that the likelihood that the statistical findings in H2014 represented biological epistasis was severely diminished. Importantly, it raised the question of why such a fundamental method was giving rise to unreliable results.
 
-Wood et al (2014) interpreted the original discovery as haplotype effects, a well-understood mechanism by which two loci can appear epistatic but be due to a simple additive effect. Here, the observed loci flank a causal variant and are each in incomplete linkage disequilibrium with each other and the causal variant. A statistical interaction between the observed loci can capture more of the additive variance of the causal variant than the marginal additive effects of both the observed loci combined. This explanation for the H2014 was unproven but plausable for the set of cis-cis interactions reported, those where the two interacting loci were each close to the gene whose expression levels they were influencing. Other work has since appeared that investigate the same process. However it does not explain the discovery and attenuation of cis-trans interactions, where the two interacting loci are on different chromosomes, and a fine-mapped cis-additive effect attenuates the interaction effect. In this paper we explore the question of how a single unobserved cis-additive effect can give rise to cis-trans statistical associations. We go on to explore how this influences replication rates, and discuss potential methods for avoiding the problem.
+Wood et al (2014) interpreted the original discovery interactions as haplotype effects, a well-understood mechanism by which two loci can appear epistatic but be due to a simple additive effect. Here, the observed loci flank a causal variant and are in incomplete linkage disequilibrium with each other and the causal variant. A statistical interaction between the observed loci can capture more of the additive variance of the causal variant than the marginal additive effects of both the observed loci combined. This explanation for the H2014 was unproven but plausable for the set of cis-cis interactions reported, those where the two interacting loci were each close to the gene whose expression levels they were influencing. Other work has since appeared that investigate the same process. However it does not explain the discovery and attenuation of cis-trans interactions, where the two interacting loci are on different chromosomes, and a fine-mapped cis-additive effect attenuates the interaction effect. In this paper we explore the question of how a single unobserved cis-additive effect can give rise to cis-trans statistical associations. We go on to explore how this influences replication rates, and discuss potential methods for avoiding the problem.
 
 ## Inflation of test statistics
 
-If the test statistic for the interaction term can be attenuated with the inclusion of a single additive term, this implies that the interaction test statistic is inflated under the null hypothesis of no epistasis. To begin, we test this assumption by estimating the genomic inflation factor for each of the 501 interactions discovered in H2014. In each case, we performed a genome-wide analysis where we performed an interaction test of the detected cis-SNP against every other SNP excluding those on the cis chromosome. The genomic inflation factor was then calculated for the interaction test statistics across the set of genome-wide tests. Figure 1 shows that for many loci the inflation factor is much larger than 1, consistent with the idea that the test statistics are inflated. 
+If the test statistic for the interaction term can be attenuated with the inclusion of a single additive term, this implies that the interaction test statistic is inflated under the null hypothesis of no epistasis. To begin, we test this assumption by estimating the genomic inflation factor for each of the 501 interactions discovered in H2014. In each case, we ran a genome-wide analysis where we performed an interaction test of the detected cis-SNP against every other SNP excluding those on the cis chromosome. The genomic inflation factor was then calculated for the interaction test statistics across the set of genome-wide tests. Figure 1 shows that for many loci the inflation factor is much larger than the expected under the null, consistent with the idea that the test statistics are inflated. 
 
-There are other possible explanations, such as an epistatic polygenic component, that could give rise to high genomic inflation factors, though this is unlikely. We also observe that many loci that had discovered associations have low genomic inflation factors.
+There are other possible explanations that could give rise to high genomic inflation factors, such as an epistatic polygenic component, though this is unlikely given the discovery sample size. We also observe that many loci that had discovered associations have low genomic inflation factors, which raises the question of whether this metric is a reliable indicator of false positives.
 
 ## Relationship between cis-trans genotype pairs and the cis-causal variant
 
@@ -73,11 +73,15 @@ cov(y_{1},y_{2}y_{3}) &= p_{3}(p_{1}p_{2} + D) - p_{1}p_{2}p_{3} \\
 \end{aligned}
 $$
 
-This explains how a cis-trans interaction term could be accounted for by including the fine-mapped variant in the model. We next explore what gives rise to a high false discovery rate during the search for interactions.
+This explains how a cis-trans interaction term could be accounted for by including the fine-mapped variant in the model. 
+
+We next explore what gives rise to a high false discovery rate during the search for interactions, including when the the genomic inflation factor is as expected under the null hypothesis of no interaction. Begin by 
+
+
 
 ## Test statistic inflation under a simplified haploid model
 
-We have empirically observed high genomic inflation factors for the discovered loci. Consistent with this would be the mean test statistic under the null hypothesis of no interaction is being higher than expected. But to explain discovered interaction terms where the genomic inflation factor is low, we would need to observe higher variance of the test statistic than expected by chance. Here we use a simplified model to estimate the mean and variance of the test statistic under the null hypothesis of no interaction.
+We have empirically observed high genomic inflation factors for the discovered loci. Consistent with this would be the mean test statistic under the null hypothesis of no interaction being higher than expected. But to explain discovered interaction terms where the genomic inflation factor is low, we would need to observe higher variance of the test statistic than expected by chance. Here we use a simplified model to estimate the mean and variance of the test statistic under the null hypothesis of no interaction.
 
 Assume that the phenotype is explained entirely by $y_1$, which represents the fine-mapped additive cis-effect. In this case, what is the distribution of test statistics when testing for interaction between a tagging locus, $y_2$ and another unlinked locus, $y_3$. Here the interaction test amounts to an ANOVA between the models $a$ and $b$:
 
@@ -96,14 +100,18 @@ $$
 
 Under the null hypothesis, and $e_a$ and $e_b$ being normally distributed, $F_{ab}$ follows a central F-distribution with $1$ and $n-4$ degrees of freedom. The expected value of the F value is $E(F_{ab}) = 1$, with $Var(F_{ab}) = 2$.
 
-... demonstrate that variance of F is higher than expected ...
+
+TODO: 
+
+- mean and variance of F is higher than expected
+- show that this is due to error term being a mixture of normal and binomial distributions
 
 
 ## Simulations mimicking the original analyses
 
-Having demonstrated that the variance and the mean of the test statistic is higher than expected under a simplified haploid model, we now use simulations to explore the behaviour of the test statistic whilst approximating the original testing conditions in H2014. 
+Having demonstrated that the mean and the variance of the test statistic is higher than expected under a simplified haploid model, we now use simulations to explore the behaviour of the test statistic whilst approximating the original testing conditions in H2014 (Methods). 
 
-There were 846 samples in the discovery and a combined 2131 in the replication datasets used in H2014. We reported *MBNL1* gene expression being influenced by several cis-trans epistatic interactions, where the cis variant was rs13069559. These associations replicated at the Bonferroni level in the independent replication sample. Fitting the fine-mapped additive cis-variant rs67903230 attenuated the cis-trans signals involving rs13069559. Here, we used genotype data from the Avon Longitudinal Study of Parents and Children (ALSPAC) to generate discovery and replication datasets of the same sizes as used in H2014. We used the rs67903230 to simulate a large additive effect, and then performed the 4df interaction test for association between the original cis variant rs13069559 and 502510 genotyped markers, excluding the cis chromosome (chromosome 3). Any pair of loci that had interaction test statistics surpassing a Bonferroni correction were taken forward to replication. As in the original analysis, we only allowed one trans-effect per chromosome, thus the maximum number of cis-trans interactions for a simulation was 21. We performed 40,000 simulations, allowing the phenotypic variance explained by the rs67903230 additive effect to range uniformly from 0 to 50% across the set of simulations.
+There were 846 samples in the discovery and a combined 2131 in the replication datasets used in H2014. We reported *MBNL1* gene expression being influenced by several cis-trans epistatic interactions, where the cis variant was rs13069559. These associations replicated at the Bonferroni level in the independent replication sample. Fitting the fine-mapped additive cis-variant rs67903230 attenuated the cis-trans signals involving rs13069559. Using real genetic data we used the rs67903230 variant to simulate a phenotype with a large additive effect, and then performed the 4df interaction test for association between the originallu discovered cis variant rs13069559 and 502510 genotyped markers, excluding the cis chromosome (chromosome 3). Any pair of loci that had interaction test statistics surpassing a Bonferroni correction were taken forward to replication. As in the original analysis, we only allowed one trans-effect per chromosome, thus the maximum number of cis-trans interactions for a simulation was 21. We performed 40,000 simulations, allowing the phenotypic variance explained by the rs67903230 additive effect to range uniformly from 0 to 50% across the set of simulations.
 
 Figure 2 shows that the genomic inflation factor related strongly to the variance explained by the additive effect. Figure 3 demonstrates that as genomic inflation grows, the number of false positive interactions grows. We also observe that it is possible to obtain several false discovery signals per simulation even when the genomic inflation factor is low.
 
@@ -119,19 +127,34 @@ These simulations were designed to be as favourable as possible to generate fals
 
 ## Avoiding inflation of interaction test statistics
 
-We now ask whether it is possible to avoid the inflation that we see in interaction tests going forward. An intuitive approach would be to use a two stage strategy, where first the additive effects are fine-mapped for the phenotype, and second the interaction search is performed with the fine-mapped variants included as covariates in the model. In the previous simulations, however, we observed that even when there are very small additive effects it is possible to find false positive interaction test statistics. This implies that if there is incomplete tagging of the additive effects by the fine-mapping strategy, we would fail to completely protect against inflated test statistics. 
+We now ask whether it is possible to avoid the inflation that we see in interaction tests. An intuitive approach would be to use a two stage strategy, where first the additive effects are fine-mapped for the phenotype, and second the interaction search is performed with the fine-mapped variants included as covariates in the model. In the previous simulations, however, we observed that even when there are very small additive effects it is possible to find false positive interaction test statistics. This implies that if there is incomplete tagging of the additive effects by the fine-mapping strategy, we would fail to completely protect against inflated test statistics. 
 
-To test this, we performed a new set of simulations in which we simulated a phenotype using a variant typed in the UK10K sequence dataset as the cis additive causal effect. We then developed four datasets in which to perform the analysis - 1) retaining SNPs only present on Illumina CoreExome array, 2) variants imputed from this array to the HapMap2 reference panel, 3) variants imputed from this array to 1000 genomes reference panel, 4) the original sequence data. In each case we identified the top variant and tested for interaction against remaining SNPs. Figure 7 demonstrates that only when the sequence level data is available is it possible to prevent inflation of the test statistic. 
+To test this, we performed a new set of simulations in which we constructed a phenotype using a variant typed in the UK10K sequence dataset as the cis additive causal effect. We then developed four datasets in which to perform the analysis - 1) retaining SNPs only present on Illumina CoreExome array, 2) variants imputed from this array to the HapMap2 reference panel, 3) variants imputed from this array to 1000 genomes reference panel, 4) the original sequence data. In each case we identified the top variant and tested for interaction against remaining SNPs. Figure 7 demonstrates that only when the sequence level data is available is it possible to prevent inflation of the test statistic. 
 
 
 ## Discussion
+
+We have shown that a large additive effect can contaminate standard approaches to obtaining genetic interaction test statistics. The problem arises because neighbouring variants that imperfectly tag that additive effect are liable to exhibit higher mean and substantially higher variance of the test statistic. Ultimately this can lead to high false discovery rates, and those are likely to be correlated between datasets which can lead to some degree of replication. 
+
+In order to guard against this problem it may be insufficient to fit the fine-mapped additive effects if there is any measurement error, suggesting that sequence level data may be required. We also show that genomic inflation factors are not always reliable metrics for detecting cases where false positives may have arisen.
+
+Other things to add (?):
+
+- Statistical vs biological epistasis? e.g. Recent papers on pleiotropy talk about statistical pleiotropy, not biological pleiotropy
+- The state of knowledge of epistasis
+- Ways forward
+
 
 
 
 
 ## Methods
 
-### Replication simulations
+### Genomic inflation in the discovery data
+
+TODO
+
+### Simulations of discovery-replication scenarios
 
 Our objective is to evaluate the expected behaviour of replication of interaction tests under the null hypothesis that there is no interaction (and therefore any discovered interactions are false positives). To do this we create two datasets, one representing the discovery sample (n = 846) and another representing the replication (n = 2131). We use genotype data from the Avon Longitudinal Study of Parents and Children (ALSPAC) study to create the two genetic datasets, such that realistic LD structures are present and there is genotype resampling between the discovery and replication. The ALSPAC data was imputed to 1000 genomes reference panel (Phase 3 version 1), and used to simulate the phenotype under an additive model, where a large additive effect was caused by a single variant. 
 
@@ -148,13 +171,15 @@ where $x_{ic} \in {0,1,2}$ is the genotype value for individual $i$ at the causa
 
 #### Analyses
 
-Once the phenotype was simulated using the causal variant, we were able to obtain F-statistics for the interaction term of the tagging variant (rs13069559) against every trans-variant (excluding those on the cis-chromosome). We retained only 528,509 autosomal markers to match the original discovery data. The 4 df interaction test was performed between rs13069559 and each of these markers sequentially. We did this both in the discovery and the replication dataset, so that we could compare the distributions of F-statistics between the two, where we expect variation to only arise due to resampling of genotype values.
+Once the phenotype was simulated using the causal variant, we were able to obtain F-statistics for the interaction term of the tagging variant (rs13069559) against every trans-variant (excluding those on the cis-chromosome). We retained only 502,510 autosomal markers to match the original discovery data, excluding those on chromosome 3 which is where *MBNL1* resides. The 4 df interaction test was performed between rs13069559 and each of these markers sequentially. We did this both in the discovery and the replication dataset, so that we could compare the distributions of F-statistics between the two, where we expect variation to only arise due to resampling of genotype values.
 
 This process of creating a phenotype, performing the cis-trans analysis in the discovery and the cis-trans analysis in the replication, was repeated 40,000 times. 
 
 To mimic the discovery-replication process, for a particular simulation we tested if any cis-trans interactions (4 df test) were significant at a Bonferroni corrected threshold, and then looked up their associations in the replication. 
 
+### Adjustment simulations
 
+TODO
 
 ## Figures
 
@@ -162,12 +187,12 @@ To mimic the discovery-replication process, for a particular simulation we teste
 
 ![Figure 2: Relationship between variance explained by the cis additive locus (x-axis) and genomic inflation factor for the interaction test statistic (y-axis)](figures/fig2a.png)
 
-![Figure 3: Number of independent and significant interaction terms under additive model (y-axis) with respect to the genomic inflation factor in the simulation (x-axis)](figures/fig2b.png)
+![Figure 3: The number of independent and significant interaction terms under an additive model (y-axis) with respect to the genomic inflation factor in the simulation (x-axis)](figures/fig2b.png)
 
 ![Figure 4: Relationship between genomic inflation factor in the discovery (x-axis) and replication datasets (y-axis) for 40,000 genome-wide simulations](figures/fig3a.png)
 
 ![Figure 5: Distribution of the correlation of the interaction F-statistics between two independent datasets, across 40,000 simulations](figures/fig3b.png)
 
-![Figure 6: Rate of replication of false positives in an independent dataset (y-axis) as a function of the genomic inflation estimated in the discovery dataset (x-axis). Colours represent the replication significance threshold used, where 'experiment' is the one used in H2014 (p < 0.05/501), and Bonferroni and FDR pertain the multiple testing correction within simulation.](figures/fig3c.png)
+![Figure 6: Rate of replication of false positives in an independent dataset (y-axis) as a function of the genomic inflation estimated in the discovery dataset (x-axis). Colours represent the replication significance threshold used, where 'experiment' is the one used in H2014 (p < 0.05/501), and Bonferroni and FDR pertain the multiple testing correction within simulation, as each simulation can give rise to multiple independent false positives.](figures/fig3c.png)
 
 ![Figure 7: Genomic inflation factors (y-axis) estimated for interaction test statistics across a range of values for the variance explained by the additive effect (x-axis). Each line represents a different data scenario.](figures/fig4.pdf)
