@@ -151,11 +151,11 @@ Checking the equation
 plot((dat$sse1-dat$sse2)/dat$vare2, dat$F)
 ```
 
-This works great. 
+This works great but note that in the original document it was $SSE_2 - SSE_1$ which should be switched.
 
 ## Interaction test
 
-Let the genotypic value of $y_{1.ij} = (y_1 = 1 | y_2 = i, y_3 = j)$ where $i,j \in \{0,1\}$ the counts
+Let the genotypic value of $y_{1.ij} = (y_1 = 1 | y_2 = i, y_3 = j)$ where $i,j \in \{0,1\}$, and the counts for each value be
 
 $$
 n_{ij} = n ( 1- p_2 + i(2p_2) - 1))(1 - p_3 + i(2p_3-1))
@@ -238,7 +238,9 @@ est_delta(dat)
 est_delta(datw)
 ```
 
-Variance of $\delta$ can be calculated from the allele and haplotype frequencies and compared to its variance under a linear model (LM). Create a set of simulations for cis-trans and trans-trans cases
+In the linear model the error variance is assumed to be the same in each cell of the 2 x 2 table and a pooled estimate is used. 
+
+Variance of $\delta$ can be calculated from the allele and haplotype frequencies and compared to its variance under a linear model (LM). Summarise each of 1000 simulations for cis-trans and trans-trans examples:
 
 ```{r}
 # cis-trans
@@ -308,6 +310,18 @@ $$
 var(mean(y_{1.ij})) = E(y_{1.ij})(1 - E(y1.ij)) / n_{ij}
 $$
 
+Putting all the terms together gives the exact variance of the test statistic as 
+
+
+$$
+var(\delta) = 
+\frac{p_1(1-p_1) + \frac{(1-2p_1)(1-2p_2)D}{p2(1-p2)} - \frac{D^2(1-3p_2(1-p_2))}{p_2^2(1-p_2])^2} }
+{n p_2(1-p_2)p_3(1-p_3)}
+$$
+
+
+
+
 Check:
 
 ```{r}
@@ -321,5 +335,14 @@ mean(m$y1.11) * (1 - mean(m$y1.11)) / mean((m$p2) * (m$p3) * 1000)
 
 **Don't seem to be getting agreement here.**
 
+The general idea that the variance of each term is differentseems to be correct though, as the variance of $var(mean(y_{1.ij}))$ is not consistent over $i$ and $j$
+
+```{r}
+(sd(m$y1.11) / sqrt(nrow(m)))^2
+(sd(m$y1.10) / sqrt(nrow(m)))^2
+(sd(m$y1.01) / sqrt(nrow(m)))^2
+(sd(m$y1.00) / sqrt(nrow(m)))^2
+```
 
 
+Putting all the terms together

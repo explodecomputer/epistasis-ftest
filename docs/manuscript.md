@@ -25,16 +25,15 @@ Should epistatic interactions influence complex traits, their detection is known
 While many methods exist that attempt to circumvent these problems, one analytical strategy has been to bypass statistical power issues by selecting traits to analyse that are likely to have some large effects. In such traits, genetic perturbation could have a more proximal effect in comparison to complex diseases. Recent studies have focused efforts on analysing gene expression levels for epistatic interactions partly for this reason. In H2014 a brute force search strategy was performed, applying a 4 d.f. linear model for each pairwise combination of 528,509 genotyped autosomal single nucleotide polymorphisms (SNPs) against each of 7,339 gene expression levels. The statistical test attemped to capture any joint effect of two independent variants that was not explained by the marginal additive or dominance effects of either of the variants. 
 
 $$
-H_{0}: \sum^{3}_{i=1} \sum^{3}_{j=1} (\bar{x_{ij}} - \bar{x_{i}} - \bar{x_{j}} + \mu)^2 = 0
+\begin{aligned}
+H_{0}&: \sum^{3}_{i=1} \sum^{3}_{j=1} (\bar{x_{ij}} - \bar{x_{i}} - \bar{x_{j}} + \mu)^2 = 0 \\
+H_{1}&: \sum^{3}_{i=1} \sum^{3}_{j=1} (\bar{x_{ij}} - \bar{x_{i}} - \bar{x_{j}} + \mu)^2 > 0
+\end{aligned}
 $$
 
-$$
-H_{1}: \sum^{3}_{i=1} \sum^{3}_{j=1} (\bar{x_{ij}} - \bar{x_{i}} - \bar{x_{j}} + \mu)^2 > 0
-$$
+Here the additive x additive, additive x dominance, dominance x additive and dominance x dominance terms are jointly estimated in the interaction term. This effect decomposition is fundamental to basic quantitative genetic theory, originally formulated by Cockerham (1954), and has been used routinely in the linkage study era and the GWAS era (Cordell 2002, Wei et al 2015). The level of epistasis can be tested for statistical significance using an F test with $4,n-9$ degrees of freedom. A simpler variation is to parameterise the interaction term to include only the additive x additive, though what follows in this paper applies to that approach also.
 
-This effect decomposition is fundamental to basic quantitative genetic theory, originally formulated by Cockerham (1954), and has been used routinely in the linkage study era and the GWAS era (Cordell 2002, Wei et al 2015). The level of epistasis can be tested for statistical significance using an F test with $4,n-9$ degrees of freedom. 
-
-The method was used in H2014 with a sample of 846 individuals, and yielded 501 independent pairwise interactions that surpassed a permutation-derived threshold of $p < 2.31 \times 10^{-16}$. The majority of these interactions were long-range 'cis-trans' associations, where one interacting variant was close to the gene whose expression level was influenced, and the other interacting variant was on a different chromosome. In two independent datasets, together comprising 2,131 individuals, 30 of these interactions replicated at a Bonferroni multiple testing correction ($p < 0.05/501$), and 46 replicated at FDR < 0.05.
+The 4 d.f. method was used in H2014 with a sample of 846 individuals, and yielded 501 independent pairwise interactions that surpassed a permutation-derived threshold of $p < 2.31 \times 10^{-16}$. The majority of these interactions were long-range 'cis-trans' associations, where one interacting variant was close to the gene whose expression level was influenced, and the other interacting variant was on a different chromosome. In two independent datasets, together comprising 2,131 individuals, 30 of these interactions replicated at a Bonferroni multiple testing correction ($p < 0.05/501$), and 46 replicated at FDR < 0.05.
 
 ## A summary of the problems with the original findings
 
@@ -75,15 +74,13 @@ $$
 
 This explains how a cis-trans interaction term could be accounted for by including the fine-mapped variant in the model. 
 
-We next explore what gives rise to a high false discovery rate during the search for interactions, including when the the genomic inflation factor is as expected under the null hypothesis of no interaction. Begin by 
-
-
+We next explore what gives rise to a high false discovery rate during the search for interactions, including when the the genomic inflation factor is as expected under the null hypothesis of no interaction. 
 
 ## Test statistic inflation under a simplified haploid model
 
 We have empirically observed high genomic inflation factors for the discovered loci. Consistent with this would be the mean test statistic under the null hypothesis of no interaction being higher than expected. But to explain discovered interaction terms where the genomic inflation factor is low, we would need to observe higher variance of the test statistic than expected by chance. Here we use a simplified model to estimate the mean and variance of the test statistic under the null hypothesis of no interaction.
 
-Assume that the phenotype is explained entirely by $y_1$, which represents the fine-mapped additive cis-effect. In this case, what is the distribution of test statistics when testing for interaction between a tagging locus, $y_2$ and another unlinked locus, $y_3$. Here the interaction test amounts to an ANOVA between the models $a$ and $b$:
+Assume that the phenotype is explained entirely by $y_1$, which represents the fine-mapped additive cis-effect. In this case, what is the distribution of test statistics when testing for interaction between a tagging locus, $y_2$ and another unlinked locus, $y_3$? Here the interaction test amounts to an ANOVA between the models $a$ and $b$:
 
 $$
 \begin{aligned}
@@ -92,19 +89,96 @@ y_1 &\sim y_2 + y_3 + y_{2}y_{3} + e_b
 \end{aligned}
 $$
 
-In this haploid case, the interaction test statistic is 
+In the haploid example and a single additive x additive interaction term, the interaction test statistic is 
 
 $$
 F_{ab} = \frac{(SSE_a - SSE_b) / 1}{SSE_b / (n-4)}
 $$
 
-Under the null hypothesis, and $e_a$ and $e_b$ being normally distributed, $F_{ab}$ follows a central F-distribution with $1$ and $n-4$ degrees of freedom. The expected value of the F value is $E(F_{ab}) = 1$, with $Var(F_{ab}) = 2$.
+Under the null hypothesis, and $e_a$ and $e_b$ being normally distributed, $F_{ab}$ follows a central F-distribution with $1$ and $n-4$ degrees of freedom. We conducted basic simulations of this model, where we set $p_1 = p_2 = 0.1$, $p_3 = 0.5$, and the LD was either $r_{12} = 0.5$ or 0. in order to generate the values of $y_1$, $y_2$ and $y_3$. We then tested for interaction to obtain $F_{ab}$, and repeated the process 10000 times to obtain a distribution of $F_{ab}$ when there is LD between $y_1$ and $y_2$, and when they are uncorrelated. When uncorrelated the mean and variance of $F_{ab}$ are approximately 1 and 2, following expectation. However when $y_1$ and $y_2$ are correlated the mean and variance of $F_{ab}$ are approximately 3.4 and 23. 
 
 
-TODO: 
+### Theory
 
-- mean and variance of F is higher than expected
-- show that this is due to error term being a mixture of normal and binomial distributions
+The reason behind this inflation is that the error variance of the interaction test becomes a mixture of a binomial and normal distribution, which violates the assumptions of the linear model (LM). To illustrate this, let the genotypic value of $y_{1.ij} = (y_1 = 1 | y_2 = i, y_3 = j)$ where $i,j \in \{0,1\}$, and let the counts for each genotype combination be:
+
+$$
+n_{ij} = n ( 1- p_2 + i(2p_2) - 1))(1 - p_3 + i(2p_3-1))
+$$
+
+We can define a test for interaction as
+
+$$
+\delta = mean(y_{1.11}) + mean(y_{1.00}) - mean(y_{1.10}) - mean(y_{1.01})
+$$
+
+with $mean(y_{1.ij}) = \sum y_{1.ij} / n_{ij}$. Under a linear model we expect that the error variance of each $mean(y_{1.ij})$ to be the same, and a pooled estimate is used. Here we show that this assumption is violated. From the given haplotype frequencies:
+
+$$
+\begin{aligned}
+E(y_{1.11}) = E(y_{1.10}) &= p(y_1 = 1 | y_2 = 1) \\
+                          &= p_{11} / p2 \\
+                          &= p_1 + D / p_2
+\end{aligned}
+$$
+
+and similarly
+
+$$
+\begin{aligned}
+E(y_{1.00}) = E(y_{1.01}) &= p(y_1 = 0 | y_2 = 0) \\
+                          &= p_{00} / p2 \\
+                          &= p_1 - D/(1 - p_2)
+\end{aligned}
+$$
+
+Each of the terms has a binomial variance
+
+$$
+var(mean(y_{1.ij})) = E(y_{1.ij})(1 - E(y1.ij)) / n_{ij}
+$$
+
+and frequencies
+
+$$
+\begin{aligned}
+y_2\; & y_3 & n_{ij}/n \\
+0\; & 0 & (1 - p_2)(1 - p_3) \\
+0\; & 1 & p_2(1 - p_3) \\
+1\; & 0 & (1 - p_2)p_3 \\
+1\; & 1 & p_2p_3 \\
+\end{aligned}
+$$
+
+Putting all the terms together gives the exact variance of the test statistic as 
+
+$$
+var(\delta) = 
+\frac{p_1(1-p_1) + \frac{(1-2p_1)(1-2p_2)D}{p2(1-p2)} - \frac{D^2(1-3p_2(1-p_2))}{p_2^2(1-p_2])^2} }
+{c}
+$$
+
+where $c = n p_2(1-p_2)p_3(1-p_3)$. As a result
+
+\begin{align}
+c \cdot var(\delta_{LM}) = p_1(1-p_1)(1-r_{12}^2) = var(e_{LM})
+\end{align}
+
+Thus when using a linear model an incorrect variance of the interaction test is assumed, and this can lead to inflated (or deflated) type-I error rates. The ratio of the exact and linear model variances is the expected value of the linear model F-test. If we first rearrange (1),
+
+\begin{align}
+c \cdot var(\delta) = var(e_{LM}) + \frac{D(1 - 2p_i)(1-2p_2)}{p_2(1-p_2)} -
+\frac{D^2(1-2p_2)^2}{p_2^2(1-p_2)^2}
+\end{align}
+
+we can obtain the ratio of equations (1) and (2) as
+
+\begin{align}
+var(\delta)/var(\delta_{LM}) = E(F) = 1 + \frac{D(1 - 2p_i)(1-2p_2)}{p_2(1-p_2)} -
+\frac{D^2(1-2p_2)^2}{p_2^2(1-p_2)^2}
+\end{align}
+
+Unless $D = 0$, $p_2 = 0.5$ or $r_{12} = 1$ the exact variance is different from that under the linear model. Equation (3) also shows that the inflation term does not depend on the allele frequency at the unlinked locus. For the parameters used in the simulation above, the using equation (3) gives $E(F) = 3.47$, agreeing with the results from the simulation.
 
 
 ## Simulations mimicking the original analyses
@@ -145,9 +219,6 @@ Other things to add (?):
 - Ways forward
 
 
-
-
-
 ## Methods
 
 ### Genomic inflation in the discovery data
@@ -160,22 +231,22 @@ Our objective is to evaluate the expected behaviour of replication of interactio
 
 #### Phenotype simulation
 
-Here we want to simulate a phenotype that is due to a single large additive effect, and then perform interaction tests with that causal variant absent from the set of markers that are tested. In H2014 we reported *MBNL1* gene expression being influenced by several cis-trans epistatic interactions. In that scenario, rs67903230 was the fine-mapped additive cis-variant, which we will treat as the causal variant in these simulations. It was absent from the genotype data used to conduct the interaction analysis, and instead rs13069559 emerged as a cis-tagging variant, which showed interaction associations against variants on other chromosomes, and also replicated in independent datasets. We attempt to mimic this scenario here.
+Here we want to simulate a phenotype that is due to a single large additive effect, and then perform interaction tests with that causal variant absent from the set of markers that are tested. In H2014 we reported *MBNL1* gene expression being influenced by several cis-trans epistatic interactions. In that scenario, rs67903230 was the fine-mapped additive cis-variant, which we will treat as the causal variant in these simulations. It was absent from the genotype data used to conduct the interaction analysis, and instead rs13069559 emerged as a cis-tagging variant, which showed interaction associations against variants on other chromosomes, and also replicated in independent datasets. We attempt to mimic this scenario here. We define the phenotype to be simulated as
 
-$$
+\begin{align}
 y_i = b_{c}x_{ic} + e_i
-$$
+\end{align}
 
-where $x_{ic} \in {0,1,2}$ is the genotype value for individual $i$ at the causal variant. In this case we use the rs67903230 in the ALSPAC data. The residual error term $e_i \sim N(0, 1-b^2_c var(x_c))$ where additive effect $b_c = \sqrt{\frac{r_c^2 var(y)}{var(x)}}$ such that across the simulations $r^2_c \sim U(0,0.5)$. 
+where $x_{ic} \in \{0,1,2\}$ is the genotype value for individual $i$ at the causal variant. In this case we use the rs67903230 in the ALSPAC data. The residual error term $e_i \sim N(0, 1-b^2_c var(x_c))$ where additive effect $b_c = \sqrt{\frac{r_c^2 var(y)}{var(x)}}$ such that across the simulations $r^2_c \sim U(0,0.5)$. 
 
 
 #### Analyses
 
-Once the phenotype was simulated using the causal variant, we were able to obtain F-statistics for the interaction term of the tagging variant (rs13069559) against every trans-variant (excluding those on the cis-chromosome). We retained only 502,510 autosomal markers to match the original discovery data, excluding those on chromosome 3 which is where *MBNL1* resides. The 4 df interaction test was performed between rs13069559 and each of these markers sequentially. We did this both in the discovery and the replication dataset, so that we could compare the distributions of F-statistics between the two, where we expect variation to only arise due to resampling of genotype values.
+Once the phenotype was simulated using the causal variant, we were able to obtain F-statistics for the interaction term of the tagging variant (rs13069559) against every trans-variant (excluding those on the cis-chromosome). We retained only 502,510 autosomal markers to match the original discovery data, excluding those on chromosome 3 which is where *MBNL1* resides. The 4 d.f. interaction test was performed between rs13069559 and each of these markers sequentially. We did this both in the discovery and the replication dataset, so that we could compare the distributions of F-statistics between the two, where we expect variation to only arise due to resampling of genotype values.
 
 This process of creating a phenotype, performing the cis-trans analysis in the discovery and the cis-trans analysis in the replication, was repeated 40,000 times. 
 
-To mimic the discovery-replication process, for a particular simulation we tested if any cis-trans interactions (4 df test) were significant at a Bonferroni corrected threshold, and then looked up their associations in the replication. 
+To mimic the discovery-replication process, for a particular simulation we tested if any cis-trans interactions (4 d.f. test) were significant at a Bonferroni corrected threshold, and then looked up their associations in the replication. 
 
 ### Adjustment simulations
 
@@ -185,11 +256,11 @@ TODO
 
 ![Figure 1: Genomic inflation factors for each of the 501 SNP pairs that passed the significance filters in H2014. Values on the x-axis were calculated as the ratio of the median F-statistic for the interaction test and its value under the null hypothesis.](figures/fig1.pdf)
 
-![Figure 2: Relationship between variance explained by the cis additive locus (x-axis) and genomic inflation factor for the interaction test statistic (y-axis)](figures/fig2a.png)
+![Figure 2: Relationship between variance explained by the cis additive locus (x-axis) and genomic inflation factor for the interaction test statistic (y-axis). Each point represents one simulation, where the genomic inflation factor was calculated from 502,510 interaction tests](figures/fig2a.png)
 
-![Figure 3: The number of independent and significant interaction terms under an additive model (y-axis) with respect to the genomic inflation factor in the simulation (x-axis)](figures/fig2b.png)
+![Figure 3: The number of independent and significant interaction terms under an additive model (y-axis) with respect to the genomic inflation factor in the simulation (x-axis). This graph summarises the results from 40,000 simulations which were binned into 30 classes (x-axis) based on the genomic inflation factor of the experiment. Each bar represents the distribution of the number of discoveries for simulations within those bins.](figures/fig2b.png)
 
-![Figure 4: Relationship between genomic inflation factor in the discovery (x-axis) and replication datasets (y-axis) for 40,000 genome-wide simulations](figures/fig3a.png)
+![Figure 4: Relationship between genomic inflation factor in the discovery (x-axis) and replication datasets (y-axis) where each point represents one of 40,000 genome-wide simulations.](figures/fig3a.png)
 
 ![Figure 5: Distribution of the correlation of the interaction F-statistics between two independent datasets, across 40,000 simulations](figures/fig3b.png)
 
