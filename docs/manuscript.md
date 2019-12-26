@@ -152,31 +152,39 @@ $$
 
 Putting all the terms together gives the exact variance of the test statistic as 
 
-\begin{align}
+$$
+\begin{aligned}
 var(\delta) = 
 \frac{p_1(1-p_1) + \frac{(1-2p_1)(1-2p_2)D}{p2(1-p2)} - \frac{D^2(1-3p_2(1-p_2))}{p_2^2(1-p_2])^2} }
 {c}
-\end{align}
+\end{aligned}
+$$
 
 where $c = n p_2(1-p_2)p_3(1-p_3)$. As a result
 
-\begin{align}
+$$
+\begin{aligned}
 c \cdot var(\delta_{LM}) = p_1(1-p_1)(1-r_{12}^2) = var(e_{LM})
-\end{align}
+\end{aligned}
+$$
 
-Thus when using a linear model an incorrect variance of the interaction test is assumed, and this can lead to inflated (or deflated) type-I error rates. The ratio of the exact and linear model variances is the expected value of the linear model F-test. If we first rearrange (1),
+Thus when using a linear model an incorrect variance of the interaction test is assumed, and this can lead to inflated (or deflated) type-I error rates. The ratio of the exact and linear model variances is the expected value of the linear model F-test. If we first rearrange,
 
-\begin{align}
+$$
+\begin{aligned}
 c \cdot var(\delta) = var(e_{LM}) + \frac{D(1 - 2p_i)(1-2p_2)}{p_2(1-p_2)} -
 \frac{D^2(1-2p_2)^2}{p_2^2(1-p_2)^2}
-\end{align}
+\end{aligned}
+$$
 
-we can obtain the ratio of equations (1) and (2) as
+we can obtain the ratio of test statistic variances
 
-\begin{align}
+$$
+\begin{aligned}
 var(\delta)/var(\delta_{LM}) = E(F) = 1 + \frac{D(1 - 2p_i)(1-2p_2)}{p_2(1-p_2)} -
 \frac{D^2(1-2p_2)^2}{p_2^2(1-p_2)^2}
-\end{align}
+\end{aligned}
+$$
 
 Unless $D = 0$, $p_2 = 0.5$ or $r_{12} = 1$ the exact variance is different from that under the linear model. Equation (3) also shows that the inflation term does not depend on the allele frequency at the unlinked locus. For the parameters used in the simulation above, the using equation (3) gives $E(F) = 3.47$, agreeing with the results from the simulation.
 
@@ -240,9 +248,11 @@ Our objective is to evaluate the expected behaviour of replication of interactio
 
 Here we want to simulate a phenotype that is due to a single large additive effect, and then perform interaction tests with that causal variant absent from the set of markers that are tested. In H2014 we reported *MBNL1* gene expression being influenced by several cis-trans epistatic interactions. In that scenario, rs67903230 was the fine-mapped additive cis-variant, which we will treat as the causal variant in these simulations. It was absent from the genotype data used to conduct the interaction analysis, and instead rs13069559 emerged as a cis-tagging variant, which showed interaction associations against variants on other chromosomes, and also replicated in independent datasets. We attempt to mimic this scenario here. We define the phenotype to be simulated as
 
-\begin{align}
+$$
+\begin{aligned}
 y_i = b_{c}x_{ic} + e_i
-\end{align}
+\end{aligned}
+$$
 
 where $x_{ic} \in \{0,1,2\}$ is the genotype value for individual $i$ at the causal variant. In this case we use the rs67903230 in the ALSPAC data. The residual error term $e_i \sim N(0, 1-b^2_c var(x_c))$ where additive effect $b_c = \sqrt{\frac{r_c^2 var(y)}{var(x)}}$ such that across the simulations $r^2_c \sim U(0,0.5)$. 
 
