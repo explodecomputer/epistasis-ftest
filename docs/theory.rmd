@@ -7,8 +7,9 @@ title: F test theory
 suppressWarnings(suppressPackageStartupMessages({
 	library(dplyr)
 	library(knitr)
+	library(simulateGP)
 }))
-knitr::opts_chunk$set(warning=FALSE, message=FALSE, cache=TRUE, echo=TRUE)
+knitr::opts_chunk$set(warning=FALSE, message=FALSE, cache=TRUE, echo=TRUE, error=FALSE)
 ```
 
 Simulate a simple 3 locus haplotype system with two loci in LD of 0.5, and each with MAF = 0.1
@@ -345,4 +346,175 @@ The general idea that the variance of each term is differentseems to be correct 
 ```
 
 
-Putting all the terms together
+## Other aspects
+
+### Adjusting for additive effects with varying degrees of measurement error
+
+```{r}
+gendatp <- function(n, p1, p2, p3, r1, shufprop)
+{
+	dat <- simulateGP:::simulate_haplotypes(n, r1, p1, p2) %>% as_tibble %>% dplyr::select(y1=A1, y2=B1)
+	dat$y3 <- rbinom(n, 1, p3)
+	dat$y4 <- dat$y1
+	index <- sample(1:nrow(dat), shufprop * nrow(dat), replace=FALSE)
+	dat$y4[index] <- sample(dat$y4[index])
+	return(dat)
+}
+
+run_simp <- function(param, i)
+{
+	set.seed(i*10)
+	dat <- gendatp(param$n[i], param$p1[i], param$p2[i], param$p3[i], param$r1[i], param$shufprop[i])
+	# dat$y1r <- residuals(lm(y1 ~ y4, dat))
+	x <- dat$y1 + rnorm(nrow(dat), sd=sd(dat$y1)/2)
+	mod1 <- lm(x ~ y4 + y2 + y3, dat)
+	mod2 <- lm(x ~ y4 + y2 + y3 + y2*y3, dat)
+	amod <- anova(mod1, mod2)
+	param$r2[i] <- cor(dat$y1, dat$y4)
+	param$F[i] <- amod$F[2]
+	return(param[i,])
+}
+
+
+param <- expand.grid(
+	p1=0.1,
+	p2=0.1,
+	p3=0.5,
+	p4=0.1,
+	shufprop=seq(0, 1, by=0.1),
+	n=1000,
+	r1=seq(0, 1, by=0.2),
+	sim=1:500,
+	r2=NA,
+	F=NA
+)
+
+resp <- lapply(1:nrow(param), function(x) run_simp(param, x)) %>% bind_rows()
+```
+
+Plot
+
+```{r}
+resp %>%
+group_by(r1, shufprop) %>%
+summarise(n=n(), mF=mean(F, na.rm=T), vF=var(F, na.rm=T), r2=mean(r2, na.rm=T)) %>% as.data.frame
+resp$R2 <- 1 - resp$shufprop
+ggplot(resp, aes(x=as.factor(R2), y=F)) +
+geom_boxplot(aes(fill=as.factor(r1))) +
+scale_fill_brewer(type="seq") +
+labs(y="Interaction F value", x="Measurement precision of causal additive variant", fill="LD between tagging\nvariant and causal variant")
+```
+
+
+## Point estimation
+
+
+A model where the average additive effect is different from the per-individual additive effect. The error term in the model is now a mixture of variance not explained by the SNP and heterogeneity in the effect of the SNP across the population.
+
+```{r}
+simulate_phen <- function(x, meanb, varb, r2)
+{
+	n <- length(x)
+	b <- rnorm(n, meanb, sqrt(varb))
+	yp <- x * b
+	myb <- x * meanb
+	vhet <- var(yp) - var(x * meanb)
+	r2het <- cor(myb, yp)^2
+	ve <- (var(myb) - r2 * var(myb)) / r2
+	y <- yp + rnorm(n, 0, sqrt(ve - vhet))
+	m <- try(lm(y ~ x)$coef[2])
+	m <- ifelse(class(m) == 'try-error', NA, m)
+	return(
+		list(
+			y=y,
+			info=tibble(
+				varb=varb,
+				r2=r2,
+				r2het=r2het,
+				rsqxy=cor(x,y)^2,
+				ve=ve,
+				vy=var(y),
+				vyp=var(yp),
+				vhet=vhet,
+				bhat=m
+			)
+		)	
+	)
+}
+
+x <- rbinom(10000, 1, 0.5)
+out <- expand.grid(meanb=1, varb=seq(0.0, 0.5, by=0.02), r2=seq(0.1, 1, by=0.1)) %>%
+	split(., 1:nrow(.)) %>%
+	lapply(., function(i) simulate_phen(x, i$meanb, i$varb, i$r2)$info) %>% bind_rows()
+
+plot(rsqxy ~ r2, out)
+ggplot(out, aes(x=vyp, y=ve-vhet)) +
+geom_point() +
+facet_wrap(~ r2 )
+
+```
+
+Run simulations to see how point estimation heterogeneity impacts F statistic in interaction test.
+
+
+```{r}
+run_simp2 <- function(param, i)
+{
+	set.seed(i)
+	dat <- gendatp(param$n[i], param$p1[i], param$p2[i], param$p3[i], param$r1[i], param$shufprop[i])
+	o <- simulate_phen(dat$y1, param$meanb[i], param$varb[i], param$r2add[i])
+	x <- o$y
+	info <- o$info
+	mod1 <- lm(x ~ y1 + y3, dat)
+	mod2 <- lm(x ~ y1 + y3 + y1*y3, dat)
+	amod <- anova(mod1, mod2)
+	param$r2[i] <- cor(dat$y1, x)
+	param$F[i] <- amod$F[2]
+	param$ve <- info$ve
+	param$vhet <- info$vhet
+	param$rsqxy <- info$rsqxy
+	param$vy <- info$vy
+
+	return(param[i,])
+}
+
+param <- expand.grid(
+	p1=0.1,
+	p2=0.1,
+	p3=0.5,
+	p4=0.1,
+	shufprop=0,
+	r2add=0.5,
+	meanb=1,
+	varb=seq(0, 0.4, by=0.01),
+	n=1000,
+	r1=0.5,
+	sim=1:1000,
+	r2=NA,
+	F=NA
+)
+
+res <- lapply(1:nrow(param), function(x) run_simp2(param, x)) %>% bind_rows()
+
+res %>%
+group_by(r1, varb) %>%
+summarise(
+	n=n(), 
+	mF=mean(F, na.rm=T), 
+	vF=var(F, na.rm=T), 
+	r2=mean(r2, na.rm=T), 
+	ve=mean(ve, na.rm=T), 
+	vhet=mean(vhet, na.rm=T), 
+	rsqxy=mean(rsqxy, na.rm=T),
+	vy=mean(vy, na.rm=T)
+) %>% as.data.frame
+res$vhetvy <- res$vhet/res$vy
+res$vhetvy[res$vhetvy < 0] <- 0
+res$vhetvy <- cut(res$vhetvy, breaks=10)
+ggplot(res, aes(x=varb, y=F)) +
+geom_boxplot(aes(group=as.factor(varb), fill=varb==0)) +
+scale_fill_brewer(type="seq") +
+labs(y="Interaction F value", x="Proportion of error variance due to point estimation error", fill="No inflation") +
+theme(axis.text.x=element_text(angle=90, hjust=1, vjust=0.5))
+
+```

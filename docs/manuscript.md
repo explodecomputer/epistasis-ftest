@@ -9,7 +9,7 @@ output:
 
 ## Abstract
 
-The extent to which genetic interaction (epistasis) contributes to the genetic architecture of human complex traits is expected to be low but remains unknown. The primary approach to evaluating this question is to perform large scale searches of pairwise interactions, using an F-test that evaluates if the interaction terms explain more than the marginal terms alone. Using results of 501 genetic interactions previously reported to influence gene expression, along side theory and simulations, this paper seeks to explain why the standard approach is unreliable. We show that it can lead to high false discovery rates, that those false discoveries can have high replication rates, and that without sequence level data the problems are difficult to guard against.
+The extent to which genetic interaction (epistasis) contributes to the genetic architecture of human complex traits is expected to be low but remains unknown. A common approach to evaluating this question is to perform or targeted or hypothesis-free searches of pairwise interactions, using an F-test that evaluates if the interaction terms explain more than the marginal terms alone. Using results of 501 genetic interactions previously reported to influence gene expression, along side theory and simulations, this paper seeks to explain why the standard approach is unreliable. We show that it can lead to high false discovery rates, that those false discoveries can have high replication rates, and that without sequence level data and assumptions of constant additive effects being met, the problems are difficult to guard against.
 
 
 ## Introduction
@@ -100,7 +100,7 @@ Under the null hypothesis, and $e_a$ and $e_b$ being normally distributed, $F_{a
 
 ### Theory
 
-The reason behind this inflation is that the error variance of the interaction test becomes a mixture of a binomial and normal distribution, which violates the assumptions of the linear model (LM). To illustrate this, let the genotypic value of $y_{1.ij} = (y_1 = 1 | y_2 = i, y_3 = j)$ where $i,j \in \{0,1\}$, and let the counts for each genotype combination be:
+The reason behind this inflation is that the error variance of the interaction test becomes a mixture of a binomial and normal distribution, which violates the assumptions of the linear model (LM). Here we continue with the simplified haploid example to illustrate this process. Let the genotypic value of $y_{1.ij} = (y_1 = 1 | y_2 = i, y_3 = j)$ where $i,j \in \{0,1\}$, and let the counts for each genotype combination be:
 
 $$
 n_{ij} = n ( 1- p_2 + i(2p_2) - 1))(1 - p_3 + i(2p_3-1))
@@ -152,11 +152,11 @@ $$
 
 Putting all the terms together gives the exact variance of the test statistic as 
 
-$$
+\begin{align}
 var(\delta) = 
 \frac{p_1(1-p_1) + \frac{(1-2p_1)(1-2p_2)D}{p2(1-p2)} - \frac{D^2(1-3p_2(1-p_2))}{p_2^2(1-p_2])^2} }
 {c}
-$$
+\end{align}
 
 where $c = n p_2(1-p_2)p_3(1-p_3)$. As a result
 
@@ -199,11 +199,16 @@ Using the simulations described in the previous section, we were able to compare
 These simulations were designed to be as favourable as possible to generate false positive interaction terms, so it is unclear why the H2014 paper found a replication rate that is substantially higher than those found in these simulations. One possibility is that there is a mixture of false positives and true epistatic effects amongst those discovered in H2014.
 
 
-## Avoiding inflation of interaction test statistics
+## Measurement error in the causal additive
 
-We now ask whether it is possible to avoid the inflation that we see in interaction tests. An intuitive approach would be to use a two stage strategy, where first the additive effects are fine-mapped for the phenotype, and second the interaction search is performed with the fine-mapped variants included as covariates in the model. In the previous simulations, however, we observed that even when there are very small additive effects it is possible to find false positive interaction test statistics. This implies that if there is incomplete tagging of the additive effects by the fine-mapping strategy, we would fail to completely protect against inflated test statistics. 
+We now ask whether it is possible to avoid the inflation that we see in interaction tests. An intuitive approach would be to use a two stage strategy, where first the additive effects are fine-mapped for the phenotype, and second the interaction search is performed with the fine-mapped variants included as covariates in the model. In the previous simulations, however, we observed that even when there are very small additive effects it is possible to find false positive interaction test statistics. This implies that if there is incomplete tagging of the additive effects by the fine-mapping strategy, we would fail to completely protect against inflated test statistics. This is confirmed through a basic simulation showing that interaction test statistic inflation occurs when the causal variant is included in the linear model, but there is measurement error of the causal variant (Figure 7).
 
-To test this, we performed a new set of simulations in which we constructed a phenotype using a variant typed in the UK10K sequence dataset as the cis additive causal effect. We then developed four datasets in which to perform the analysis - 1) retaining SNPs only present on Illumina CoreExome array, 2) variants imputed from this array to the HapMap2 reference panel, 3) variants imputed from this array to 1000 genomes reference panel, 4) the original sequence data. In each case we identified the top variant and tested for interaction against remaining SNPs. Figure 7 demonstrates that only when the sequence level data is available is it possible to prevent inflation of the test statistic. 
+To evaluate how this problem might transpire empirically, we performed a new set of simulations in which we constructed a phenotype using a variant typed in the UK10K sequence dataset as the cis additive causal effect. We then developed four datasets in which to perform the analysis - 1) retaining SNPs only present on Illumina CoreExome array, 2) variants imputed from this array to the HapMap2 reference panel, 3) variants imputed from this array to 1000 genomes reference panel, 4) the original sequence data. In each case we identified the top variant and tested for interaction against remaining SNPs. Figure 8 demonstrates that only when the sequence level data is available is it possible to prevent inflation of the test statistic. 
+
+
+## Additive effect heterogeneity
+
+We have shown that the additive cis-causal variant must be measured without error and included as a covariate in order to avoid test statistic inflation of the interaction term. However there is a scenario in which even this will not be sufficient - if there is heterogeneity of the causal variant's effect across the samples. Typically we assume that the estimate of the causal effect in a linear model represents the influence of the variant on all individuals. However, if there is variation in the effect and we only capture the average effect, the residual error term becomes a mixture of variance not captured by the causal variant, and variance not captured by the average effect estimate of the causal variant. Here we demonstrate through simple haploid simulations that if there is any effect heterogeneity, even when the causal variant is included as a covariate, the interaction term will be inflated (Figure 9).
 
 
 ## Discussion
@@ -212,18 +217,20 @@ We have shown that a large additive effect can contaminate standard approaches t
 
 In order to guard against this problem it may be insufficient to fit the fine-mapped additive effects if there is any measurement error, suggesting that sequence level data may be required. We also show that genomic inflation factors are not always reliable metrics for detecting cases where false positives may have arisen.
 
-Other things to add (?):
+There is a long history of problems arising in genetic analysis due to the interplay between statistical tests and background genetic architecture being poorly understood or experimental design being misaligned. Linkage studies on complex traits have exhibited poor replication, and it was recently shown that under a polygenic architecture the LOD score could be inflated, thus the standard threshold was not sufficiently conservative. Candidate gene studies also have a legacy of poor replication due to what is likely to be a combination of low power under a polygenic model and publication bias. In the case of the F-statistic used for detecting epistasis, the problem of inflation that we describe here arises due to two forces. First, when there is strong but imperfect tagging between a large additive causal variant and a nearby locus, the mean and the variance of the test statistic for interaction terms of the tagging locus will be inflated. Second, an exhaustive search for epistasis will allow the ascertainment of loci that have the appropriate tagging qualities to maximise test statistic inflation. This problem will exist even in a more targeted search for interactions with a known additive locus against other loci, if the true additive effect isn't completely captured. Such a scenario can arise even when the causal variant is known but is poorly typed e.g. due to imperfect imputation.
 
-- Statistical vs biological epistasis? e.g. Recent papers on pleiotropy talk about statistical pleiotropy, not biological pleiotropy
-- The state of knowledge of epistasis
-- Ways forward
+How we reliably perform tests for epistasis going forwards remains a challenging question. There are scenarios which our work here indicates that test statistic inflation is unlikely. We have shown that adjusting for fine-mapped cis-additive effects does not completely protect the interaction test statistic at tagging loci from inflation if genotyping accuracy is not guaranteed. It does however improve matters substantially, and so we advocate that this should be done routinely. 
+
+A second approach is that for any loci that are detected with interaction effects, a permutation test of that specific interaction could be performed where the phenotype and cis-effect are held constant while the trans-effect (i.e. the variant that is not tagging an additive effect) is permuted. This would give an empirical distribution of the test statistic in the context of potential inflation.  Non-parametric tests, if computationally tractable, may also be immune to this form of interaction test statistic inflation. 
+
+Over and above these approaches, using sequence data offers the most robust solution to protecting against inflation, though we warn that even here errors may remain. For example, point estimation issues could still pose a problem, i.e. where there is heterogeneity in the additive effect. If there is no large additive effect, as is the case with most complex traits and for most trans regions of 'omic variables, then the problem of the residual being a mixture of binomial and normal distributions is unlikely to exist. 
 
 
 ## Methods
 
 ### Genomic inflation in the discovery data
 
-TODO
+For each of the 501 interactions reported in H2014, we used the original discovery data to estimate the genomic inflation factor of the interaction test statistic, where we tested for interaction of the cis-locus against all trans-loci. This resulted in approximately 500,000 interaction test statistics per analysis (varying depending on the cis-chromosome, as that was omitted for the test). We calculated the genomic inflation factor as the observed median chi-square statistic divided by the expected expected value of 0.455.
 
 ### Simulations of discovery-replication scenarios
 
@@ -248,9 +255,49 @@ This process of creating a phenotype, performing the cis-trans analysis in the d
 
 To mimic the discovery-replication process, for a particular simulation we tested if any cis-trans interactions (4 d.f. test) were significant at a Bonferroni corrected threshold, and then looked up their associations in the replication. 
 
-### Adjustment simulations
+### Cis-adjustment simulations
+
+Our objective is to observe the test statistic inflation when the cis-additive causal variant is included as a covariate in the interaction model, but there is some degree of measurement error in the causal variant. We used the haploid simulation scenario for simplicity, in which there are four variants $x_c \sim Binom(1, 0.1)$ the causal variant, $x^*_c \sim Binom(1, 0.1)$ the observed causal variant which has some measurement error $1-r^2_c$, a tagging cis-variant $x_t \sim Binom(1, 0.1)$ which has some LD $r^2_t$ with the causal variant $x_c$, and an unlinked variant $x_u \sim Binom(1, 0.5)$. When $r^2_c < 0$ $x^*_c$, this represents poor imputation accuracy at the causal variant or a fine-mapped tagging variant in incomplete LD with the causal variant. We simulated a continuous phenotype $y \sim bx_x + e$ where $e \sim N(0, \sigma^2_{x_c}/2)$ thus two thirds of the variance was explained by $x_c$. The following statistical test was performed to test for interaction between the tagging cis-variant $x_t$ and the unlinked locus $x_u$, after fitting the measured fine-mapped variant as a covariate
+
+$$
+y \sim x^*_c + x_t + x_u + x_{t}x_{u}
+$$
+
+Simulations were performed for 1000 haploid samples, and over a combination of values for $r^2_c \in \{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1\}$ and $r^2_c \in \{0, 0.2, 0.4, 0.6, 0.8, 1\}$ where each scenario was repeated 500 times.
+
+
+### Sequence data simulations
 
 TODO
+
+
+### Additive effect heterogeneity simulations
+
+Typically the causal effect parameter is treated as constant across all individuals. However, if there is heterogeneity in this parameter, such that linear models only estimate the average causal effect, then the error variance is a combination of variance not captured by the causal variant, and variance not captured due to misestimation of the per-individual effect size. The objective of this set of simulations is to demonstrate that even when there is knowledge of the causal variant and that causal variant is measured perfectly, test statistic inflation can arise due to assumption that the causal additive effect is constant across individuals. Let the causal effect be 
+
+$$
+b \sim N(\bar{b}, \sigma^2_{b})
+$$
+
+and the phenotype for individual $i$
+
+$$
+y_i = b_i x_{ci} + e_i
+$$
+
+where $x_{ci} \sim Binom(1, 0.1)$ and $e \sim N(0, \sigma^2_e - \sigma^2_{het})$. We constructed the error variance to add additional noise on top of that due to causal effect heterogeneity, such that in a linear model $\sum \bar{b}x_{ci}$ explained $r^2_c$ of the variance. Thus, the variance due to effect heterogeneity $\sigma^2_{het} = var(\sum b_i x_{ci}) - var(\sum \bar{b}x_{ci})$, and the variance of the residual error
+
+$$
+\sigma^2_e = \frac{var(\sum b_i x_{ci}) - r^2_c var(\sum \bar{b}x_{ci}))}{r^2_c}
+$$
+
+We then tested for interaction between the perfectly measured causal variant and an unlinked locus $x_u \sim Binom(1, 0.5)$ using the model
+
+$$
+y \sim x_c + x_u + x_{c}x_{u}
+$$
+
+Across the simulations, we used 1000 samples, set $\bar{b} = 1$ and used a range of $\sigma^2_b \in \{0, 0.01, ..., 0.4\}$, with 500 replicates per scenario. In each scenario, the variance explained by the average effect of the causal variant remains the same at $r^2_c = 0.5$, but the proportion of the residual variance due to point estimation error varies due to changing $\sigma^2_b$.
 
 ## Figures
 
@@ -266,4 +313,8 @@ TODO
 
 ![Figure 6: Rate of replication of false positives in an independent dataset (y-axis) as a function of the genomic inflation estimated in the discovery dataset (x-axis). Colours represent the replication significance threshold used, where 'experiment' is the one used in H2014 (p < 0.05/501), and Bonferroni and FDR pertain the multiple testing correction within simulation, as each simulation can give rise to multiple independent false positives.](figures/fig3c.png)
 
-![Figure 7: Genomic inflation factors (y-axis) estimated for interaction test statistics across a range of values for the variance explained by the additive effect (x-axis). Each line represents a different data scenario.](figures/fig4.pdf)
+![Figure 7: Test statistic inflation (y-axis) due to measurement error of the additive causal variant. Here a tagging variant and an unlinked variant for interaction, and the causal variant is included as a covariate. There is varying amounts of measurement error of the causal variant (x-axis), and LD between the the tagging variant and causal variant (colours). When there is no measurement imprecision, there is no test statistic inflation. When there is measurement imprecision the only scenarios in which there is no test statistic inflation is if the tagging variant (which is being tested for interaction) has LD $r^2$ of 0 or 1 with the true causal variant.](figures/measurementerror.png)
+
+![Figure 8: Genomic inflation factors (y-axis) estimated for interaction test statistics across a range of values for the variance explained by the additive effect (x-axis). Each line (colours) represents a different data scenario.](figures/fig4.pdf)
+
+![Figure 9: Heterogeneity in the additive causal effect across individuals can induce test statistic inflation (y-axis), even when the true causal variant is measured perfectly and included as a covariate in the linear model. Here the average causal effect explains 50% of the variance of the phenotype, but the proportion of this that is due to heterogeneity of the causal effect on the phenotype varies (x-axis). Only when there is no heterogeneity is there no inflation of the interaction test statistic (colours).](figures/pointestimation.png)
