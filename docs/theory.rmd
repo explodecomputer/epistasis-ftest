@@ -518,3 +518,176 @@ labs(y="Interaction F value", x="Proportion of error variance due to point estim
 theme(axis.text.x=element_text(angle=90, hjust=1, vjust=0.5))
 
 ```
+
+
+## Permutation analysis of false positives
+
+Expect that if we permute the trans locus then the artifact due to the additive locus will remain
+
+```{r}
+gendatp <- function(n, p1, p2, p3, r1, shufprop)
+{
+	dat <- simulateGP:::simulate_haplotypes(n, r1, p1, p2) %>% as_tibble %>% dplyr::select(y1=A1, y2=B1)
+	dat$y3 <- rbinom(n, 1, p3)
+	dat$y4 <- dat$y1
+	index <- sample(1:nrow(dat), shufprop * nrow(dat), replace=FALSE)
+	dat$y4[index] <- sample(dat$y4[index])
+	return(dat)
+}
+
+permutation_analysis <- function(dat, nperm)
+{
+	res <- array(0, nperm)
+	for(i in 1:nperm)
+	{
+		dat$y3 <- sample(dat$y3)
+		mod1 <- lm(x ~ y2 + y3, dat)
+		mod2 <- lm(x ~ y2 + y3 + y2*y3, dat)
+		amod <- anova(mod1, mod2)
+		res[i] <- amod$F[2]
+	}
+	return(res)
+}
+
+run_simp <- function(param, i)
+{
+	set.seed(i*10)
+	dat <- gendatp(param$n[i], param$p1[i], param$p2[i], param$p3[i], param$r1[i], param$shufprop[i])
+	# dat$y1r <- residuals(lm(y1 ~ y4, dat))
+	dat$x <- dat$y1 + rnorm(nrow(dat), sd=sd(dat$y1)/2)
+	mod1 <- lm(x ~ y2 + y3, dat)
+	mod2 <- lm(x ~ y2 + y3 + y2*y3, dat)
+	amod <- anova(mod1, mod2)
+	param$r2[i] <- cor(dat$y1, dat$y4)
+	param$F[i] <- amod$F[2]
+	if(param$F[i] > param$threshold[i])
+	{
+		permres <- permutation_analysis(dat, param$nperm[i])
+		param$perm_1[i] <- sum(param$F[i] < permres, na.rm=TRUE)
+		param$perm_n[i] <- sum(!is.na(permres))
+		param$perm_p[i] <- param$perm_1[i] / param$perm_n[i]
+		param$perm_max[i] <- max(permres, na.rm=TRUE)
+		param$perm_median[i] <- median(permres, na.rm=TRUE)
+		param$perm_mean[i] <- mean(permres, na.rm=TRUE)
+	}
+
+	return(param[i,])
+}
+
+
+param <- expand.grid(
+	p1=0.1,
+	p2=0.1,
+	p3=0.5,
+	p4=0.1,
+	shufprop=0.6,
+	n=1000,
+	r1=0.6,
+	threshold=qf(1e-8, 4, 9996, lower.tail=FALSE),
+	nperm=1000,
+	sim=1:1000,
+	r2=NA,
+	F=NA,
+	perm_p=NA,
+	perm_n=NA,
+	perm_1=NA,
+	r2_null=NA,
+	F_null=NA,
+	perm_p_null=NA,
+	perm_n_null=NA,
+	perm_1_null=NA,
+	perm_max=NA,
+	perm_median=NA,
+	perm_mean=NA
+)
+
+resp <- lapply(1:nrow(param), function(x) run_simp(param, x)) %>% bind_rows()
+```
+
+Plot
+
+```{r}
+resp %>%
+ggplot(., aes(x=F, y=-log10(perm_p))) +
+geom_point() +
+labs(x="Discovery F-statistic", y="-log10(p) from permutation analysis")
+```
+
+
+
+```{r}
+run_simp_h1 <- function(param, i)
+{
+	set.seed(i*10)
+	dat <- gendatp(param$n[i], param$p1[i], param$p2[i], param$p3[i], param$r1[i], param$shufprop[i])
+	# dat$y1r <- residuals(lm(y1 ~ y4, dat))
+	dat$x <- param$beta_a[i] * dat$y1 + param$beta_i[i] * dat$y2 * dat$y3 + rnorm(nrow(dat), sd=sd(dat$y2*dat$y3)/2)
+	mod1 <- lm(x ~ y2 + y3, dat)
+	mod2 <- lm(x ~ y2 + y3 + y2*y3, dat)
+	amod <- anova(mod1, mod2)
+	param$r2[i] <- cor(dat$y1, dat$y4)
+	param$F[i] <- amod$F[2]
+	if(param$F[i] > param$threshold[i])
+	{
+		print(param$F[i])
+		permres <- permutation_analysis(dat, param$nperm[i])
+		param$perm_1[i] <- sum(param$F[i] < permres, na.rm=TRUE)
+		param$perm_n[i] <- sum(!is.na(permres))
+		param$perm_p[i] <- param$perm_1[i] / param$perm_n[i]
+		param$perm_max[i] <- max(permres, na.rm=TRUE)
+		param$perm_median[i] <- median(permres, na.rm=TRUE)
+		param$perm_mean[i] <- mean(permres, na.rm=TRUE)
+	}
+
+	return(param[i,])
+}
+
+param <- expand.grid(
+	p1=0.1,
+	p2=0.1,
+	p3=0.5,
+	p4=0.1,
+	beta_a=c(0,1),
+	beta_i=c(0,0.1),
+	shufprop=0.6,
+	n=1000,
+	r1=0.6,
+	threshold=qf(1e-8, 4, 9996, lower.tail=FALSE),
+	nperm=1000,
+	sim=1:500,
+	r2=NA,
+	F=NA,
+	perm_p=NA,
+	perm_n=NA,
+	perm_1=NA,
+	r2_null=NA,
+	F_null=NA,
+	perm_p_null=NA,
+	perm_n_null=NA,
+	perm_1_null=NA,
+	perm_max=NA,
+	perm_median=NA,
+	perm_mean=NA
+)
+
+# resp2 <- lapply(1:nrow(param), function(x) run_simp_h1(param, x)) %>% bind_rows()
+
+# rbind(resp %>% mutate(beta=0), resp2) %>%
+# mutate(beta = paste("beta =", beta)) %>%
+# ggplot(., aes(x=F, y=-log10(perm_p))) +
+# geom_point() +
+# facet_grid(beta ~ .) +
+# labs(x="Discovery F-statistic", y="-log10(p) from permutation analysis")
+
+resp3 <- lapply(1:nrow(param), function(x) run_simp_h1(param, x)) %>% bind_rows()
+save(resp3, file="resp3.rdata")
+
+resp3 %>%
+mutate(beta_i = paste("beta_i =", beta_i), beta_a = paste("beta_a =", beta_a)) %>%
+ggplot(., aes(x=F, y=-log10(perm_p))) +
+geom_point() +
+facet_grid(beta_a ~ beta_i) +
+labs(x="Discovery F-statistic", y="-log10(p) from permutation analysis")
+
+```
+
