@@ -532,6 +532,7 @@ gendatp <- function(n, p1, p2, p3, r1, shufprop)
 	dat$y4 <- dat$y1
 	index <- sample(1:nrow(dat), shufprop * nrow(dat), replace=FALSE)
 	dat$y4[index] <- sample(dat$y4[index])
+	dat$yi <- dat$y3 * dat$y2
 	return(dat)
 }
 
@@ -540,9 +541,9 @@ permutation_analysis <- function(dat, nperm)
 	res <- array(0, nperm)
 	for(i in 1:nperm)
 	{
-		dat$y3 <- sample(dat$y3)
+		dat$yi <- sample(dat$yi)
 		mod1 <- lm(x ~ y2 + y3, dat)
-		mod2 <- lm(x ~ y2 + y3 + y2*y3, dat)
+		mod2 <- lm(x ~ y2 + y3 + yi, dat)
 		amod <- anova(mod1, mod2)
 		res[i] <- amod$F[2]
 	}
@@ -556,7 +557,7 @@ run_simp <- function(param, i)
 	# dat$y1r <- residuals(lm(y1 ~ y4, dat))
 	dat$x <- dat$y1 + rnorm(nrow(dat), sd=sd(dat$y1)/2)
 	mod1 <- lm(x ~ y2 + y3, dat)
-	mod2 <- lm(x ~ y2 + y3 + y2*y3, dat)
+	mod2 <- lm(x ~ y2 + y3 + yi, dat)
 	amod <- anova(mod1, mod2)
 	param$r2[i] <- cor(dat$y1, dat$y4)
 	param$F[i] <- amod$F[2]
@@ -569,6 +570,7 @@ run_simp <- function(param, i)
 		param$perm_max[i] <- max(permres, na.rm=TRUE)
 		param$perm_median[i] <- median(permres, na.rm=TRUE)
 		param$perm_mean[i] <- mean(permres, na.rm=TRUE)
+		param$perm_sd[i] <- sd(permres, na.rm=TRUE)
 	}
 
 	return(param[i,])
@@ -585,7 +587,7 @@ param <- expand.grid(
 	r1=0.6,
 	threshold=qf(1e-8, 4, 9996, lower.tail=FALSE),
 	nperm=1000,
-	sim=1:1000,
+	sim=1:100,
 	r2=NA,
 	F=NA,
 	perm_p=NA,
@@ -598,7 +600,8 @@ param <- expand.grid(
 	perm_1_null=NA,
 	perm_max=NA,
 	perm_median=NA,
-	perm_mean=NA
+	perm_mean=NA,
+	perm_SD=NA
 )
 
 resp <- lapply(1:nrow(param), function(x) run_simp(param, x)) %>% bind_rows()
@@ -623,13 +626,12 @@ run_simp_h1 <- function(param, i)
 	# dat$y1r <- residuals(lm(y1 ~ y4, dat))
 	dat$x <- param$beta_a[i] * dat$y1 + param$beta_i[i] * dat$y2 * dat$y3 + rnorm(nrow(dat), sd=sd(dat$y2*dat$y3)/2)
 	mod1 <- lm(x ~ y2 + y3, dat)
-	mod2 <- lm(x ~ y2 + y3 + y2*y3, dat)
+	mod2 <- lm(x ~ y2 + y3 + yi, dat)
 	amod <- anova(mod1, mod2)
 	param$r2[i] <- cor(dat$y1, dat$y4)
 	param$F[i] <- amod$F[2]
 	if(param$F[i] > param$threshold[i])
 	{
-		print(param$F[i])
 		permres <- permutation_analysis(dat, param$nperm[i])
 		param$perm_1[i] <- sum(param$F[i] < permres, na.rm=TRUE)
 		param$perm_n[i] <- sum(!is.na(permres))
@@ -637,6 +639,7 @@ run_simp_h1 <- function(param, i)
 		param$perm_max[i] <- max(permres, na.rm=TRUE)
 		param$perm_median[i] <- median(permres, na.rm=TRUE)
 		param$perm_mean[i] <- mean(permres, na.rm=TRUE)
+		param$perm_sd[i] <- sd(permres, na.rm=TRUE)
 	}
 
 	return(param[i,])
@@ -667,7 +670,8 @@ param <- expand.grid(
 	perm_1_null=NA,
 	perm_max=NA,
 	perm_median=NA,
-	perm_mean=NA
+	perm_mean=NA,
+	perm_SD=NA
 )
 
 # resp2 <- lapply(1:nrow(param), function(x) run_simp_h1(param, x)) %>% bind_rows()
